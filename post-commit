@@ -1,0 +1,18 @@
+#!/bin/sh
+REPOS="$1"
+REV="$2"
+
+#path to svnlook
+UUID=`/usr/subversion/bin/svnlook uuid $REPOS`
+
+#notifying jenkins for repository change
+/usr/bin/wget \
+  --header "Content-Type:text/plain;charset=UTF-8" \
+  --post-data "`/usr/subversion/bin/svnlook changed --revision $REV $REPOS`" \
+  --output-document "-" \
+  --timeout=20 \
+  --no-check-certificate \
+  http://localhost:8182/jenkins/subversion/${UUID}/notifyCommit?rev=$REV
+
+#log
+echo "`$REPOS` change to revision `$REV` triggered @ `date`" >> ${REPOS}/post-commit-hook.log
